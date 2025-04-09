@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import Image from "next/image";
 
 export default function Home() {
@@ -97,6 +99,12 @@ export default function Home() {
           />
           Go to nextjs.org →
         </a>
+        <Button className="p-10" variant={'outline'}>Tesst </Button>
+        <Card>
+          <CardHeader>Tieeu ddeef</CardHeader>
+          <CardContent>Test</CardContent>
+          <CardFooter><Button className="text-mini">Test</Button></CardFooter>
+        </Card>
       </footer>
     </div>
   );

@@ -1,0 +1,46 @@
+export interface ApiResponse<T> {
+  message: string;
+  statusCode: number;
+  data: T;
+}
+
+export interface SelfLearningTag {
+  slug: string;
+  name: string;
+}
+
+export interface AnalyzedData {
+  scope: string;
+  topic: string;
+  context: string;
+  estimatedTime: {
+    basic: string;
+    newbie: string;
+  };
+  deadline?: string;
+  note?: string;
+  estimateHours?: string;
+  relatedIssues: string;
+  academicKnowledge: string;
+}
+
+export interface SelfLearningChallengeData {
+  id: number;
+  learningGoal: string;
+  analyzedData: AnalyzedData;
+  topic: string;
+  selfLearningTag: SelfLearningTag;
+}
+
+export interface ChallengeData {
+  category: string;
+}
+
+export interface UserChallengeData {
+  id: number;
+  status: 'in_progress' | 'completed' | 'abandoned';
+  progress: number | null;
+  createdAt: string;
+  challenge: ChallengeData | null;
+  selfLearningChallenge: SelfLearningChallengeData[];
+}
