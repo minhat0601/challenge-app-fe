@@ -8,13 +8,19 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     ? { Authorization: `Bearer ${accessToken}` }
     : {};
 
+  const headers = new Headers(options.headers || {});
+
+  // Add auth header if we have a token
+  if (authHeaders.Authorization) {
+    headers.append('Authorization', authHeaders.Authorization);
+  }
+
+  // Add content type
+  headers.append('Content-Type', 'application/json');
+
   let res = await fetch(url, {
     ...options,
-    headers: {
-      ...options.headers,
-      ...authHeaders,
-      "Content-Type": "application/json",
-    },
+    headers,
   });
 
   // Token hết hạn, xử lý refresh token
@@ -28,19 +34,19 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     if (refreshRes.ok) {
       const data = await refreshRes.json();
       setAuth({
-        user: user,
+        user: user || undefined,
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
       });
 
       // Thử lại request với token mới
+      const newHeaders = new Headers(options.headers || {});
+      newHeaders.append('Authorization', `Bearer ${data.access_token}`);
+      newHeaders.append('Content-Type', 'application/json');
+
       res = await fetch(url, {
         ...options,
-        headers: {
-          ...options.headers,
-          Authorization: `Bearer ${data.access_token}`,
-          "Content-Type": "application/json",
-        },
+        headers: newHeaders,
       });
     } else {
       clearAuth(); // Refresh thất bại, đăng xuất

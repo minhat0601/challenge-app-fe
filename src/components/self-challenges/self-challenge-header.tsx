@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { LayoutGrid, Table, ArrowUpDown } from 'lucide-react';
+import { LayoutGrid, Table, ArrowUpDown, PlusCircle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +20,7 @@ interface SelfChallengeHeaderProps {
   sortBy: SortOption;
   sortDirection: SortDirection;
   onSortChange: (option: SortOption, direction: SortDirection) => void;
+  onCreateClick?: () => void;
 }
 
 export default function SelfChallengeHeader({
@@ -27,7 +28,8 @@ export default function SelfChallengeHeader({
   onViewModeChange,
   sortBy,
   sortDirection,
-  onSortChange
+  onSortChange,
+  onCreateClick
 }: SelfChallengeHeaderProps) {
   const router = useRouter();
 
@@ -111,6 +113,16 @@ export default function SelfChallengeHeader({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Create new challenge button */}
+        <Button
+          variant="default"
+          onClick={onCreateClick}
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          <PlusCircle className="h-4 w-4 mr-2" />
+          Tạo mới
+        </Button>
 
         <Button
           variant="outline"

@@ -5,8 +5,11 @@ import { toast } from 'sonner';
 import SelfChallengeHeader from '@/components/self-challenges/self-challenge-header';
 import ChallengeList from '@/components/self-challenges/challenge-list';
 import { Challenge } from '@/types/challenge';
-import { fetchMyChallenges } from '@/services/api';
+import { fetchMyChallenges, PaginationParams } from '@/services/api';
 import { UserChallengeData } from '@/types/api';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CreateChallengeSheet } from '@/components/self-challenges/create-challenge-sheet';
 
 type ViewMode = 'grid' | 'table';
 type SortOption = 'title' | 'estimatedDays' | 'progress';
@@ -76,7 +79,7 @@ function mapApiChallengeToAppChallenge(apiChallenge: UserChallengeData, currentT
     currentKnowledge: selfLearningData.analyzedData.academicKnowledge,
     progress: deadlineProgress, // Use deadline progress instead of API progress
     completed: apiChallenge.status === 'completed',
-    failed: apiChallenge.status === 'abandoned',
+    failed: apiChallenge.status === 'abandoned' || apiChallenge.status === 'failed',
     tag: selfLearningData.selfLearningTag.name,
     createdAt: apiChallenge.createdAt,
     deadline: deadlineDate?.toISOString(),
@@ -95,6 +98,13 @@ export default function SelfChallengePage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [apiChallenges, setApiChallenges] = useState<UserChallengeData[]>([]);
+  const [createSheetOpen, setCreateSheetOpen] = useState(false);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalItems, setTotalItems] = useState<number>(0);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 
   // Update current time every second for realtime progress
   useEffect(() => {
@@ -105,12 +115,29 @@ export default function SelfChallengePage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Function to fetch challenges from API
-  const loadChallenges = async () => {
+  // Function to fetch challenges from API with pagination
+  const loadChallenges = async (page = currentPage) => {
     try {
       setLoading(true);
-      const fetchedChallenges = await fetchMyChallenges();
-      setApiChallenges(fetchedChallenges);
+
+      // Convert sort direction to API format
+      const apiSortDirection = sortDirection === 'asc' ? 'ASC' : 'DESC';
+
+      // Prepare pagination params
+      const params: PaginationParams = {
+        page,
+        limit: itemsPerPage,
+        sortBy: sortBy,
+        sortDirection: apiSortDirection
+      };
+
+      const result = await fetchMyChallenges(params);
+
+      // Update state with fetched data
+      setApiChallenges(result.challenges);
+      setTotalPages(result.totalPages);
+      setTotalItems(result.totalItems);
+      setCurrentPage(result.currentPage);
     } catch (error) {
       console.error('Failed to load challenges:', error);
       toast.error('Không thể tải dữ liệu thử thách. Vui lòng thử lại sau.');
@@ -119,10 +146,11 @@ export default function SelfChallengePage() {
     }
   };
 
-  // Fetch challenges on component mount
+  // Fetch challenges when component mounts or when sort/pagination changes
   useEffect(() => {
-    loadChallenges();
-  }, []);
+    loadChallenges(currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, sortBy, sortDirection, itemsPerPage]);
 
   // Update challenges when currentTime or apiChallenges change
   useEffect(() => {
@@ -140,6 +168,8 @@ export default function SelfChallengePage() {
   const handleSortChange = (option: SortOption, direction: SortDirection) => {
     setSortBy(option);
     setSortDirection(direction);
+    // Reset to first page when sorting changes
+    setCurrentPage(1);
   };
 
   // Handle view mode change
@@ -164,6 +194,43 @@ export default function SelfChallengePage() {
     });
   }, [challenges, sortBy, sortDirection]);
 
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Handle items per page change
+  const handleItemsPerPageChange = (limit: number) => {
+    setItemsPerPage(limit);
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
+
+  // Handle create challenge click
+  const handleCreateClick = () => {
+    setCreateSheetOpen(true);
+  };
+
+  // Handle create challenge success
+  const handleCreateSuccess = async () => {
+    // Thêm toast thông báo đang cập nhật danh sách với ID
+    toast.loading('Đang cập nhật danh sách thử thách...', {
+      id: 'updating-challenges',
+      duration: 10000, // Tối đa 10 giây
+    });
+
+    // Gọi hàm loadChallenges để lấy dữ liệu mới từ API
+    try {
+      await loadChallenges(currentPage);
+      // Đóng toast loading và hiển thị toast success
+      toast.dismiss('updating-challenges');
+      toast.success('Danh sách thử thách đã được cập nhật!');
+    } catch (error) {
+      // Nếu có lỗi, hiển thị thông báo lỗi
+      toast.dismiss('updating-challenges');
+      toast.error('Không thể cập nhật danh sách thử thách!');
+    }
+  };
+
   return (
     <div className="space-y-4">
       <SelfChallengeHeader
@@ -172,13 +239,69 @@ export default function SelfChallengePage() {
         sortBy={sortBy}
         sortDirection={sortDirection}
         onSortChange={handleSortChange}
+        onCreateClick={handleCreateClick}
+      />
+
+      {/* Create Challenge Sheet */}
+      <CreateChallengeSheet
+        open={createSheetOpen}
+        onOpenChange={setCreateSheetOpen}
+        onSuccess={handleCreateSuccess}
       />
       <ChallengeList
         viewMode={viewMode}
         challenges={sortedChallenges}
         loading={loading}
-        onRefresh={loadChallenges}
+        onRefresh={() => loadChallenges(currentPage)}
       />
+
+      {/* Pagination UI */}
+      {challenges.length > 0 && (
+        <div className="flex items-center justify-between py-4">
+          <div className="flex-1 text-sm text-muted-foreground">
+            Hiển thị {totalItems > 0 ? `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, totalItems)}` : '0'} trên tổng số {totalItems} thử thách
+          </div>
+          <div className="flex items-center space-x-4">
+            {/* Items per page selector */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-muted-foreground">Hiển thị:</span>
+              <select
+                className="h-8 w-16 rounded-md border border-input bg-background px-2 text-xs"
+                value={itemsPerPage}
+                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+              >
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+
+            {/* Pagination controls */}
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                disabled={!totalPages || currentPage <= 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="text-sm font-medium">
+                Trang {currentPage} / {totalPages || 1}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                disabled={!totalPages || currentPage >= totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

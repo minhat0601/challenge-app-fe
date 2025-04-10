@@ -1,33 +1,35 @@
 /**
- * Tính thời gian đã trôi qua từ một thời điểm đến hiện tại
+ * Tính thời gian đã trôi qua từ một thời điểm đến hiện tại hoặc đến một thời điểm kết thúc
  * @param startDate Thời điểm bắt đầu
- * @returns Chuỗi thời gian đã trôi qua (ví dụ: "12 giờ 12 phút 12 giây")
+ * @param endDate Thời điểm kết thúc (mặc định là thời điểm hiện tại)
+ * @returns Chuỗi thời gian đã trôi qua (ví dụ: "12 giờ 30 phút")
  */
-export function getElapsedTime(startDate: string | Date): string {
+export function getElapsedTime(startDate: string | Date, endDate?: string | Date): string {
   const start = new Date(startDate).getTime();
-  const now = new Date().getTime();
+  const end = endDate ? new Date(endDate).getTime() : new Date().getTime();
 
   // Tính thời gian đã trôi qua tính bằng mili giây
-  const elapsed = now - start;
+  const elapsed = end - start;
 
   // Chuyển đổi thành giây, phút, giờ
   const seconds = Math.floor((elapsed / 1000) % 60);
   const minutes = Math.floor((elapsed / (1000 * 60)) % 60);
   const hours = Math.floor(elapsed / (1000 * 60 * 60));
 
-  // Tạo chuỗi kết quả, chỉ hiển thị các đơn vị lớn hơn 0
+  // Tạo chuỗi kết quả, chỉ hiển thị giờ và phút, bỏ giây
   let result = '';
 
   if (hours > 0) {
     result += `${hours} giờ `;
   }
 
-  if (minutes > 0) {
-    result += `${minutes} phút `;
+  if (minutes > 0 || (hours > 0 && minutes === 0)) {
+    result += `${minutes} phút`;
   }
 
-  if (seconds > 0 || result === '') {
-    result += `${seconds} giây`;
+  // Nếu cả giờ và phút đều bằng 0, hiển thị "dưới 1 phút"
+  if (result === '') {
+    result = 'dưới 1 phút';
   }
 
   return result.trim();
@@ -37,7 +39,7 @@ export function getElapsedTime(startDate: string | Date): string {
  * Tính thời gian từ thời điểm bắt đầu đến thời điểm kết thúc
  * @param startDate Thời điểm bắt đầu
  * @param endDate Thời điểm kết thúc
- * @returns Chuỗi thời gian giữa hai thời điểm (ví dụ: "12 giờ 12 phút 12 giây")
+ * @returns Chuỗi thời gian giữa hai thời điểm (ví dụ: "2 ngày 5 giờ 30 phút")
  */
 export function getTimeBetween(startDate: string | Date, endDate: string | Date): string {
   const start = new Date(startDate).getTime();
@@ -52,7 +54,7 @@ export function getTimeBetween(startDate: string | Date, endDate: string | Date)
   const hours = Math.floor((elapsed / (1000 * 60 * 60)) % 24);
   const days = Math.floor(elapsed / (1000 * 60 * 60 * 24));
 
-  // Tạo chuỗi kết quả, chỉ hiển thị các đơn vị lớn hơn 0
+  // Tạo chuỗi kết quả, chỉ hiển thị ngày, giờ và phút, bỏ giây
   let result = '';
 
   if (days > 0) {
@@ -63,12 +65,13 @@ export function getTimeBetween(startDate: string | Date, endDate: string | Date)
     result += `${hours} giờ `;
   }
 
-  if (minutes > 0) {
-    result += `${minutes} phút `;
+  if (minutes > 0 || (hours > 0 && minutes === 0) || (days > 0 && hours === 0 && minutes === 0)) {
+    result += `${minutes} phút`;
   }
 
-  if (seconds > 0 || result === '') {
-    result += `${seconds} giây`;
+  // Nếu tất cả đều bằng 0, hiển thị "dưới 1 phút"
+  if (result === '') {
+    result = 'dưới 1 phút';
   }
 
   return result.trim();

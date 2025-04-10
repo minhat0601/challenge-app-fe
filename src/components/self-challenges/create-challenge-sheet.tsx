@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { ErrorDialog } from '@/components/ui/error-dialog';
 
 
 // Schema cho form tạo thử thách
@@ -53,6 +54,8 @@ export function CreateChallengeSheet({
 }: CreateChallengeSheetProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Khởi tạo form
   const form = useForm<CreateChallengeFormValues>({
@@ -62,6 +65,14 @@ export function CreateChallengeSheet({
     },
   });
 
+  // Lấy prompt đã lưu từ localStorage khi component mount (không thông báo)
+  useEffect(() => {
+    const savedPrompt = localStorage.getItem('savedChallengePrompt');
+    if (savedPrompt) {
+      form.setValue('prompt', savedPrompt);
+    }
+  }, [form]);
+
   // State cho hiệu ứng đang xử lý
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -70,6 +81,23 @@ export function CreateChallengeSheet({
     setIsSubmitting(true);
     setIsProcessing(true);
 
+    // Kiểm tra xem nội dung có trùng với nội dung đã lưu không
+    const savedPrompt = localStorage.getItem('savedChallengePrompt');
+    if (savedPrompt && savedPrompt === values.prompt) {
+      // Nếu trùng lặp, hiển thị cảnh báo và không gửi lên Backend
+      toast.warning(
+        'Bạn đang gửi lại nội dung đã gặp lỗi trước đó. Vui lòng chỉnh sửa nội dung hoặc thử lại sau.',
+        {
+          id: 'duplicate-prompt',
+          duration: 5000,
+        }
+      );
+      setIsSubmitting(false);
+      setIsProcessing(false);
+      return; // Dừng lại, không gửi lên Backend
+    }
+
+    // Nếu không trùng lặp, tiếp tục gửi lên Backend
     try {
       // Chuẩn bị dữ liệu gửi lên API
       const payload = {
@@ -88,7 +116,10 @@ export function CreateChallengeSheet({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Có lỗi xảy ra khi tạo thử thách');
+        const errorMsg = errorData.message || 'Có lỗi xảy ra khi tạo thử thách';
+        setErrorMessage(errorMsg);
+        setErrorDialogOpen(true);
+        throw new Error(errorMsg);
       }
 
       // Xử lý thành công
@@ -96,6 +127,10 @@ export function CreateChallengeSheet({
         id: 'create-success',
         duration: 3000, // Hiển thị trong 3 giây
       });
+
+      // Xóa prompt đã lưu trong localStorage khi tạo thành công
+      localStorage.removeItem('savedChallengePrompt');
+
       form.reset();
       onOpenChange(false);
 
@@ -108,7 +143,12 @@ export function CreateChallengeSheet({
       }
     } catch (error) {
       console.error('Error creating challenge:', error);
-      toast.error(error instanceof Error ? error.message : 'Có lỗi xảy ra khi tạo thử thách!');
+      const errorMsg = error instanceof Error ? error.message : 'Có lỗi xảy ra khi tạo thử thách!';
+      setErrorMessage(errorMsg);
+      setErrorDialogOpen(true);
+
+      // Lưu prompt vào localStorage khi gặp lỗi
+      localStorage.setItem('savedChallengePrompt', values.prompt);
     } finally {
       setIsSubmitting(false);
       setIsProcessing(false);
@@ -116,8 +156,17 @@ export function CreateChallengeSheet({
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md md:max-w-lg overflow-y-auto">
+    <>
+      <ErrorDialog
+        open={errorDialogOpen}
+        onOpenChange={setErrorDialogOpen}
+        errorMessage={errorMessage}
+        title="Lỗi khi tạo thử thách"
+        description="Đã có lỗi xảy ra khi tạo thử thách tự học. Vui lòng kiểm tra lại thông tin hoặc thử lại sau."
+        showSavedMessage={false}
+      />
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent className="sm:max-w-md md:max-w-lg overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Tạo thử thách tự học mới</SheetTitle>
           <SheetDescription>
@@ -181,5 +230,6 @@ export function CreateChallengeSheet({
         </Form>
       </SheetContent>
     </Sheet>
+    </>
   );
 }

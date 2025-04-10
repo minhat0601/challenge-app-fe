@@ -9,6 +9,7 @@ interface MarqueeBannerProps {
   speed?: number;
   className?: string;
   variant?: 'default' | 'primary' | 'secondary' | 'warning' | 'info';
+  fixed?: boolean;
 }
 
 export function MarqueeBanner({
@@ -16,6 +17,7 @@ export function MarqueeBanner({
   speed = 40,
   className,
   variant = 'default',
+  fixed = false,
 }: MarqueeBannerProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -57,17 +59,19 @@ export function MarqueeBanner({
 
   // Define variant styles
   const variantStyles = {
-    default: "bg-muted/50 dark:bg-muted/30 border-border",
-    primary: "bg-primary/5 dark:bg-primary/10 border-primary/10 dark:border-primary/20",
-    secondary: "bg-secondary/5 dark:bg-secondary/10 border-secondary/10 dark:border-secondary/20",
-    warning: "bg-orange-500/5 dark:bg-orange-500/10 border-orange-500/10 dark:border-orange-500/20",
-    info: "bg-blue-500/5 dark:bg-blue-500/10 border-blue-500/10 dark:border-blue-500/20",
+    default: "bg-muted/60 dark:bg-muted/40 border-border",
+    primary: "bg-primary/10 dark:bg-primary/15 border-primary/20 dark:border-primary/30",
+    secondary: "bg-secondary/10 dark:bg-secondary/15 border-secondary/20 dark:border-secondary/30",
+    warning: "bg-orange-500/10 dark:bg-orange-500/15 border-orange-500/20 dark:border-orange-500/30",
+    info: "bg-blue-500/10 dark:bg-blue-500/15 border-blue-500/20 dark:border-blue-500/30",
   };
 
   return (
     <div
       className={cn(
-        "overflow-hidden whitespace-nowrap py-0.5 px-4 border-b text-xs",
+        "overflow-hidden whitespace-nowrap py-1 px-4 border-b text-xs",
+        "backdrop-blur-md backdrop-saturate-150 supports-[backdrop-filter]:bg-opacity-80",
+        fixed && "fixed top-0 left-0 right-0 z-[100] shadow-md",
         variantStyles[variant],
         className
       )}
@@ -75,12 +79,12 @@ export function MarqueeBanner({
     >
       <div
         ref={contentRef}
-        className="inline-flex items-center gap-3"
+        className="inline-flex items-center gap-3 py-0.5"
       >
         {messages.map((message, index) => (
           <div key={index} className="inline-flex items-center gap-1.5">
             <Bell className="h-3 w-3 text-primary dark:text-primary" />
-            <span className="text-muted-foreground dark:text-muted-foreground">{message}</span>
+            <span className="text-muted-foreground dark:text-muted-foreground font-medium">{message}</span>
             <span className="mx-3 text-muted-foreground/50 dark:text-muted-foreground/50">•</span>
           </div>
         ))}
@@ -88,7 +92,7 @@ export function MarqueeBanner({
         {messages.map((message, index) => (
           <div key={`dup-${index}`} className="inline-flex items-center gap-1.5">
             <Bell className="h-3 w-3 text-primary dark:text-primary" />
-            <span className="text-muted-foreground dark:text-muted-foreground">{message}</span>
+            <span className="text-muted-foreground dark:text-muted-foreground font-medium">{message}</span>
             <span className="mx-3 text-muted-foreground/50 dark:text-muted-foreground/50">•</span>
           </div>
         ))}

@@ -4,6 +4,20 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface PaginatedApiResponse<T> {
+  message: string;
+  statusCode: number;
+  data: T[];
+  meta: {
+    page: number;
+    limit: number;
+    itemCount: number;
+    pageCount: number;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+  };
+}
+
 export interface SelfLearningTag {
   slug: string;
   name: string;
@@ -30,6 +44,10 @@ export interface SelfLearningChallengeData {
   analyzedData: AnalyzedData;
   topic: string;
   selfLearningTag: SelfLearningTag;
+  aiGeneratedQuestion?: string[];
+  userAnswer?: string | null;
+  score?: number | null;
+  scope?: string | null;
 }
 
 export interface ChallengeData {
@@ -38,9 +56,13 @@ export interface ChallengeData {
 
 export interface UserChallengeData {
   id: number;
-  status: 'in_progress' | 'completed' | 'abandoned';
+  status: 'in_progress' | 'completed' | 'abandoned' | 'failed';
   progress: number | null;
   createdAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  acceptAt: string | null;
+  updatedAt: string;
   challenge: ChallengeData | null;
   selfLearningChallenge: SelfLearningChallengeData[];
 }
