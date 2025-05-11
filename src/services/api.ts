@@ -6,13 +6,7 @@ const API_BASE_URL = envConf.NEXT_PUBLIC_API_ENDPOINT || 'http://localhost:3000'
 
 export async function fetchChallenges(): Promise<UserChallengeData[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/challenges`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Include cookies for authentication
-    });
+    const response = await fetchWithAuth(`${API_BASE_URL}/challenges`);
 
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
@@ -124,5 +118,63 @@ export async function submitChallengeAnswer(submission: AnswerSubmission): Promi
   } catch (error) {
     console.error('Error submitting challenge answer:', error);
     return false;
+  }
+}
+
+// Submit test answers for a challenge
+export interface TestSubmission {
+  answers: string[];
+}
+
+export interface TestResult {
+  score: number;
+  feedback: string;
+  detail: TestQuestionResult[];
+  learning_assessment: {
+    achieved_objectives: string[];
+    missing_points: string[];
+    misconceptions: string[];
+    time_efficiency: string;
+  };
+  suggestions: {
+    improvement: string[];
+    resources: string[];
+  };
+}
+
+export interface TestQuestionResult {
+  question: string;
+  answer: string;
+  point: number;
+  comment: string;
+  accuracy: string;
+  knowledge_coverage: string;
+}
+
+export async function submitTestAnswers(challengeId: number, answers: Record<number, string>): Promise<TestResult | null> {
+  try {
+    // Chuyển đổi từ Record<number, string> sang mảng string
+    const answersArray = Object.entries(answers)
+      .sort(([a], [b]) => parseInt(a) - parseInt(b))
+      .map(([, value]) => value.trim())
+      .filter(value => value !== '');
+
+    const response = await fetchWithAuth(`${API_BASE_URL}/challenge/test-submit/${challengeId}`, {
+      method: 'POST',
+      body: JSON.stringify({ answers: answersArray }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data.statusCode === 200) {
+      return data.data as TestResult;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error submitting test answers:', error);
+    return null;
   }
 }

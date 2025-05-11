@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const accessToken = req.cookies.get("accessToken");
-  const publicRoutes = ["/login", "/register"];
+  const publicRoutes = ["/login", "/register", "/trips"];
 
   // Nếu đã đăng nhập và đang ở route public hoặc chính xác trang chủ
   if (accessToken && (publicRoutes.some((route) => pathname.startsWith(route)) || pathname === "/" || pathname === "")) {

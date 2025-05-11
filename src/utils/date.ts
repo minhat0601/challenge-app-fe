@@ -109,3 +109,31 @@ export function updateElapsedTimeElement(element: HTMLElement, startDate: string
   // Cập nhật mỗi giây
   return setInterval(updateTime, 1000);
 }
+
+/**
+ * Định dạng ngày tháng theo định dạng dd/MM/yyyy
+ * @param dateString Chuỗi ngày tháng (YYYY-MM-DD)
+ * @returns Chuỗi ngày tháng đã định dạng
+ */
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+/**
+ * Định dạng ngày tháng với tên tháng
+ * @param dateString Chuỗi ngày tháng (YYYY-MM-DD)
+ * @returns Chuỗi ngày tháng đã định dạng
+ */
+export function formatDateWithMonth(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+}

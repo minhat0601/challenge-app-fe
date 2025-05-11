@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import './challenge-card.css';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { getElapsedTime, getTimeBetween, isDeadlineExpired } from '@/utils/date';
 import { Button } from '@/components/ui/button';
@@ -114,28 +115,41 @@ export default function ChallengeList({ viewMode, challenges, loading = false, o
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {Array(6).fill(0).map((_, i) => (
-          <Card key={i} className="relative overflow-hidden">
+          <Card key={i} className="relative overflow-hidden h-[430px] flex flex-col">
             <CardHeader className="pb-2">
               <Skeleton className="h-6 w-3/4 mb-2" />
             </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
+            <CardContent className="flex-grow">
+              <div className="space-y-4 flex flex-col h-full">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-full" />
+
+                {/* Academic knowledge skeleton */}
+                <div className="p-2 bg-secondary/50 rounded-md">
+                  <Skeleton className="h-3 w-1/3 mb-1" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-full mt-1" />
+                  <Skeleton className="h-3 w-16 mt-1" />
+                </div>
+
+                {/* Tag and time remaining */}
                 <div className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-1/3" />
-                  <div className="flex items-center">
-                    <Skeleton className="h-4 w-4 mr-1" />
-                    <Skeleton className="h-4 w-16" />
-                  </div>
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-24" />
                 </div>
-                <div className="relative">
-                  <Skeleton className="h-6 w-full" />
-                  <Skeleton className="h-4 w-4 absolute right-2 top-1" />
-                </div>
-                <Skeleton className="h-8 w-full" />
+
+                <div className="flex-grow"></div>
               </div>
             </CardContent>
+            <CardFooter className="flex flex-col gap-2 pt-2">
+              {/* Progress bar skeleton */}
+              <div className="w-full h-[24px] flex items-center">
+                <Skeleton className="h-3 w-full rounded-full" />
+              </div>
+
+              {/* Button skeleton */}
+              <Skeleton className="h-9 w-full" />
+            </CardFooter>
           </Card>
         ))}
       </div>
@@ -147,47 +161,11 @@ export default function ChallengeList({ viewMode, challenges, loading = false, o
       {challenges.map((challenge) => (
         <Card
           key={challenge.id}
-          className={`relative overflow-hidden ${challenge.completed ? 'completed-card' : ''} flex flex-col h-[450px]`}
+          className={`relative overflow-hidden card-hover-effect ${challenge.completed ? 'completed-card' : ''} ${challenge.failed ? 'failed-card' : ''} flex flex-col h-[430px]`}
         >
-          {/* HEADER - Tiêu đề và trạng thái */}
+          {/* HEADER - Tiêu đề */}
           <CardHeader className="pb-2 relative">
             <CardTitle className="text-xl relative z-10 line-clamp-1">{challenge.title}</CardTitle>
-            {challenge.completed && (
-              <div className="absolute top-0 right-0 opacity-40">
-                <div className="relative w-24 h-16 rotate-[-20deg] flex items-center justify-center mr-2 mt-2">
-                  <div className="absolute inset-0 border-2 border-green-600 dark:border-green-500 rounded-md"></div>
-                  <div className="absolute inset-[2px] border border-green-600/50 dark:border-green-500/50 rounded-md"></div>
-                  <div className="absolute inset-[4px] border border-dashed border-green-600/30 dark:border-green-500/30"></div>
-
-                  <div className="absolute -top-1 -left-1 w-2 h-2 border-t-2 border-l-2 border-green-600 dark:border-green-500"></div>
-                  <div className="absolute -top-1 -right-1 w-2 h-2 border-t-2 border-r-2 border-green-600 dark:border-green-500"></div>
-                  <div className="absolute -bottom-1 -left-1 w-2 h-2 border-b-2 border-l-2 border-green-600 dark:border-green-500"></div>
-                  <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b-2 border-r-2 border-green-600 dark:border-green-500"></div>
-
-                  <div className="text-green-600 dark:text-green-500 text-center font-bold text-sm tracking-wider">
-                    Đã hoàn thành
-                  </div>
-                </div>
-              </div>
-            )}
-            {challenge.failed && (
-              <div className="absolute top-0 right-0 opacity-40">
-                <div className="relative w-24 h-16 rotate-[-20deg] flex items-center justify-center mr-2 mt-2">
-                  <div className="absolute inset-0 border-2 border-red-600 dark:border-red-500 rounded-md"></div>
-                  <div className="absolute inset-[2px] border border-red-600/50 dark:border-red-500/50 rounded-md"></div>
-                  <div className="absolute inset-[4px] border border-dashed border-red-600/30 dark:border-red-500/30"></div>
-
-                  <div className="absolute -top-1 -left-1 w-2 h-2 border-t-2 border-l-2 border-red-600 dark:border-red-500"></div>
-                  <div className="absolute -top-1 -right-1 w-2 h-2 border-t-2 border-r-2 border-red-600 dark:border-red-500"></div>
-                  <div className="absolute -bottom-1 -left-1 w-2 h-2 border-b-2 border-l-2 border-red-600 dark:border-red-500"></div>
-                  <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b-2 border-r-2 border-red-600 dark:border-red-500"></div>
-
-                  <div className="text-red-600 dark:text-red-500 text-center font-bold text-sm tracking-wider">
-                    Không hoàn thành
-                  </div>
-                </div>
-              </div>
-            )}
           </CardHeader>
 
           {/* BODY - Nội dung chính */}
@@ -202,14 +180,23 @@ export default function ChallengeList({ viewMode, challenges, loading = false, o
               {challenge.currentKnowledge && (
                 <div className="mb-4 p-2 bg-secondary/50 rounded-md">
                   <h4 className="text-xs font-medium mb-1 text-primary">Kiến thức học thuật:</h4>
-                  <div
-                    className="text-xs text-muted-foreground relative z-10 line-clamp-2 prose prose-xs dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html: challenge.currentKnowledge.length > 150
-                        ? `${challenge.currentKnowledge.substring(0, 150)}...`
-                        : challenge.currentKnowledge
-                    }}
-                  />
+                  <div className="text-xs text-muted-foreground relative z-10 line-clamp-2 prose prose-xs dark:prose-invert max-w-none">
+                    {typeof challenge.currentKnowledge === 'string' ? (
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: challenge.currentKnowledge.length > 150
+                            ? `${challenge.currentKnowledge.substring(0, 150)}...`
+                            : challenge.currentKnowledge
+                        }}
+                      />
+                    ) : (
+                      <p>
+                        {typeof challenge.currentKnowledge === 'object' && challenge.currentKnowledge.overview
+                          ? challenge.currentKnowledge.overview.substring(0, 150) + '...'
+                          : 'Xem chi tiết kiến thức học thuật'}
+                      </p>
+                    )}
+                  </div>
                   <Dialog>
                     <DialogTrigger asChild>
                       <button
@@ -227,10 +214,31 @@ export default function ChallengeList({ viewMode, challenges, loading = false, o
                         </DialogDescription>
                       </DialogHeader>
                       <div className="p-4 bg-secondary/30 rounded-md max-h-[300px] overflow-y-auto">
-                        <div
-                          className="text-sm prose prose-sm dark:prose-invert max-w-none"
-                          dangerouslySetInnerHTML={{ __html: challenge.currentKnowledge }}
-                        />
+                        <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                          {typeof challenge.currentKnowledge === 'string' ? (
+                            <div dangerouslySetInnerHTML={{ __html: challenge.currentKnowledge }} />
+                          ) : (
+                            <div>
+                              {typeof challenge.currentKnowledge === 'object' && challenge.currentKnowledge.overview && (
+                                <div className="mb-4">
+                                  <h3 className="text-base font-medium mb-2">Tổng quan</h3>
+                                  <p>{challenge.currentKnowledge.overview}</p>
+                                </div>
+                              )}
+
+                              {typeof challenge.currentKnowledge === 'object' && challenge.currentKnowledge.keyPoints && (
+                                <div className="mb-4">
+                                  <h3 className="text-base font-medium mb-2">Điểm chính</h3>
+                                  <ul className="list-disc pl-5 space-y-1">
+                                    {challenge.currentKnowledge.keyPoints.map((point: string, index: number) => (
+                                      <li key={index}>{point}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="flex justify-between items-center mt-4">
                         <Button
@@ -296,8 +304,19 @@ export default function ChallengeList({ viewMode, challenges, loading = false, o
                     </Badge>
                   )}
                 </div>
-                {challenge.daysRemaining !== undefined && (
-                  <span className="text-sm text-blue-600 dark:text-blue-400">
+                {/* Hiển thị trạng thái hoàn thành/không hoàn thành hoặc thời gian còn lại */}
+                {challenge.completed && (
+                  <span className="text-sm text-green-600 dark:text-green-400 font-medium">
+                    Đã hoàn thành
+                  </span>
+                )}
+                {challenge.failed && (
+                  <span className="text-sm text-red-600 dark:text-red-400 font-medium">
+                    Không hoàn thành
+                  </span>
+                )}
+                {!challenge.completed && !challenge.failed && challenge.daysRemaining !== undefined && (
+                  <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
                     Còn: {challenge.timeRemainingText || (challenge.daysRemaining && challenge.daysRemaining > 0 ? `${challenge.daysRemaining} ngày` : 'Hết hạn')}
                   </span>
                 )}
@@ -309,13 +328,14 @@ export default function ChallengeList({ viewMode, challenges, loading = false, o
           </CardContent>
 
           {/* FOOTER - Thanh tiến độ và nút xem chi tiết */}
-          <CardFooter className="flex flex-col gap-4 pt-4">
+          <CardFooter className="flex flex-col gap-2 pt-2">
+
             {/* Thanh tiến độ */}
-            <div className="w-full h-[40px] flex items-center relative z-10">
-              {!challenge.completed && !challenge.failed ? (
+            {!challenge.completed && !challenge.failed && (
+              <div className="w-full h-[24px] flex items-center relative z-10 mb-1">
                 <div className="w-full bg-secondary h-3 rounded-full relative z-10">
                   <div
-                    className={`h-3 rounded-full transition-all ${challenge.completed ? 'bg-green-500' : challenge.deadline && isDeadlineExpired(challenge.deadline) ? 'bg-blue-500 road-track-expired' : 'bg-blue-500 road-track'}`}
+                    className={`h-3 rounded-full transition-all ${challenge.deadline && isDeadlineExpired(challenge.deadline) ? 'bg-blue-500 road-track-expired' : 'bg-blue-500 road-track'}`}
                     style={{ width: `${challenge.progress}%` }}
                   />
                   {/* Car icon on progress bar */}
@@ -337,17 +357,15 @@ export default function ChallengeList({ viewMode, challenges, loading = false, o
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="text-xs text-muted-foreground italic">
-                  {challenge.completed ? 'Thử thách đã hoàn thành' : 'Thử thách không hoàn thành'}
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Nút xem chi tiết */}
+
+
+            {/* Nút xem chi tiết - luôn hiển thị */}
             <Button
               variant="outline"
-              className="w-full relative z-10"
+              className="w-full relative z-10 h-9"
               onClick={() => router.push(`/dashboard/selfChallenge/${challenge.id}`)}
             >
               <Eye className="h-4 w-4 mr-2" />

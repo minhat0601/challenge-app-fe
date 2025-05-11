@@ -37,7 +37,7 @@ export interface Challenge {
   description: string;
   estimatedDays: number;
   learningGoals: string;
-  currentKnowledge: string;
+  currentKnowledge: string | any;
   progress: number;
   completed?: boolean;
   failed?: boolean;

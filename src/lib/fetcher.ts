@@ -41,7 +41,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 
       // Thử lại request với token mới
       const newHeaders = new Headers(options.headers || {});
-      newHeaders.append('Authorization', `Bearer ${data.access_token}`);
+      newHeaders.append('Authorization', `Bearer ${data.accessToken}`);
       newHeaders.append('Content-Type', 'application/json');
 
       res = await fetch(url, {

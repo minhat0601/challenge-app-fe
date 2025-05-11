@@ -1,0 +1,47 @@
+/* Hiệu ứng cho card đã hoàn thành */
+.completed-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.completed-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), transparent);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Hiệu ứng cho card không hoàn thành */
+.failed-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.failed-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), transparent);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Hiệu ứng hover cho card */
+.card-hover-effect {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}

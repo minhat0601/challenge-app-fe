@@ -69,8 +69,8 @@ export function MarqueeBanner({
   return (
     <div
       className={cn(
-        "overflow-hidden whitespace-nowrap py-1 px-4 border-b text-xs",
-        "backdrop-blur-md backdrop-saturate-150 supports-[backdrop-filter]:bg-opacity-80",
+        "overflow-hidden whitespace-nowrap py-1.5 px-4 border-b text-xs",
+        "backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-opacity-70",
         fixed && "fixed top-0 left-0 right-0 z-[100] shadow-md",
         variantStyles[variant],
         className
@@ -83,7 +83,9 @@ export function MarqueeBanner({
       >
         {messages.map((message, index) => (
           <div key={index} className="inline-flex items-center gap-1.5">
-            <Bell className="h-3 w-3 text-primary dark:text-primary" />
+            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Bell className="h-3 w-3" />
+            </div>
             <span className="text-muted-foreground dark:text-muted-foreground font-medium">{message}</span>
             <span className="mx-3 text-muted-foreground/50 dark:text-muted-foreground/50">•</span>
           </div>
@@ -91,7 +93,9 @@ export function MarqueeBanner({
         {/* Duplicate messages to create seamless loop */}
         {messages.map((message, index) => (
           <div key={`dup-${index}`} className="inline-flex items-center gap-1.5">
-            <Bell className="h-3 w-3 text-primary dark:text-primary" />
+            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Bell className="h-3 w-3" />
+            </div>
             <span className="text-muted-foreground dark:text-muted-foreground font-medium">{message}</span>
             <span className="mx-3 text-muted-foreground/50 dark:text-muted-foreground/50">•</span>
           </div>

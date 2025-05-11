@@ -10,8 +10,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, CheckCircle, Clock, XCircle, MessageSquare, Calendar, Timer, BookOpen, GraduationCap, Target } from 'lucide-react';
 import { QuestionDialog } from '@/components/self-challenges/question-dialog';
+import { AfterSubmitResult } from '@/components/self-challenges/after-submit-result';
+import AcademicKnowledgeDisplay from '@/components/self-challenges/academic-knowledge-display';
 import { toast } from 'sonner';
 import { getElapsedTime, isDeadlineExpired } from '@/utils/date';
 // import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -19,7 +22,8 @@ import { getElapsedTime, isDeadlineExpired } from '@/utils/date';
 export default function ChallengePage() {
   const router = useRouter();
   const params = useParams();
-  const id = Number(params.id);
+  // Sử dụng cách an toàn để lấy id từ params
+  const id = typeof params?.id === 'string' ? Number(params.id) : 0;
 
   const [challenge, setChallenge] = useState<UserChallengeData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,6 +40,25 @@ export default function ChallengePage() {
       try {
         const data = await fetchChallengeById(id);
         setChallenge(data);
+
+        // Thử chuyển đổi academicKnowledge từ chuỗi sang đối tượng JSON nếu có thể
+        if (data?.selfLearningChallenge[0]?.analyzedData?.academicKnowledge) {
+          try {
+            const academicKnowledge = data.selfLearningChallenge[0].analyzedData.academicKnowledge;
+            // Kiểm tra xem chuỗi có dạng JSON không
+            if (academicKnowledge.startsWith('{') && academicKnowledge.endsWith('}')) {
+              const jsonData = JSON.parse(academicKnowledge);
+              if (jsonData && typeof jsonData === 'object') {
+                // Cập nhật academicKnowledge với dữ liệu JSON
+                data.selfLearningChallenge[0].analyzedData.academicKnowledge = jsonData;
+                setChallenge(data);
+              }
+            }
+          } catch (_) {
+            // Nếu không phải JSON hợp lệ, giữ nguyên chuỗi
+            console.log('academicKnowledge không phải là JSON hợp lệ');
+          }
+        }
 
         // Kiểm tra nếu điểm cao thì hiển thị confetti
         // if (data?.selfLearningChallenge[0]?.score !== null &&
@@ -109,16 +132,20 @@ export default function ChallengePage() {
         toast.success('Thử thách đã được hoàn thành thành công!');
 
         // Reload challenge data to get updated status
-        const updatedChallenge = await fetchChallengeById(id);
-        setChallenge(updatedChallenge);
+        try {
+          const updatedChallenge = await fetchChallengeById(id);
+          if (updatedChallenge) {
+            // Cập nhật trạng thái ngay lập tức
+            setChallenge(updatedChallenge);
 
-        // Hiển thị confetti nếu điểm cao
-        if (updatedChallenge &&
-            updatedChallenge.selfLearningChallenge &&
-            updatedChallenge.selfLearningChallenge[0] &&
-            updatedChallenge.selfLearningChallenge[0].score >= 8.5) {
-          fireConfetti();
+            // Cập nhật trạng thái đã hoàn thành học tập
+            setIsLearningCompleted(true);
+          }
+        } catch (fetchError) {
+          console.error('Error fetching updated challenge:', fetchError);
         }
+
+        // Hiệu ứng confetti đã được xử lý ở QuestionDialog
       } else {
         toast.error('Không thể gửi câu trả lời. Vui lòng thử lại sau.');
       }
@@ -366,10 +393,9 @@ export default function ChallengePage() {
               </div>
 
               {/* Nội dung kiến thức */}
-              <div
-                className="p-6 bg-secondary/20 border border-secondary/30 rounded-md prose prose-sm dark:prose-invert max-w-none relative z-10 shadow-sm"
-                dangerouslySetInnerHTML={{ __html: analyzedData.academicKnowledge }}
-              />
+              <div className="relative z-10">
+                <AcademicKnowledgeDisplay data={analyzedData.academicKnowledge} />
+              </div>
 
               {/* Biểu tượng chìm khác */}
               <div className="absolute right-8 bottom-8 opacity-10 pointer-events-none">
@@ -381,7 +407,8 @@ export default function ChallengePage() {
           )}
 
           {/* Câu trả lời của người dùng */}
-          {(isCompleted || isFailed) && selfLearningData?.userAnswer && (
+          {/* Chỉ hiển thị câu trả lời khi không có dữ liệu afterSubmit */}
+          {(isCompleted || isFailed) && selfLearningData?.userAnswer && !analyzedData?.afterSubmit && (
             <div className="relative">
               <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-primary" />
@@ -396,41 +423,51 @@ export default function ChallengePage() {
               <div className="p-4 bg-secondary/20 border border-secondary/30 rounded-md shadow-sm relative z-10">
                 <p className="whitespace-pre-wrap">{selfLearningData.userAnswer}</p>
               </div>
-              {selfLearningData.score !== null && selfLearningData.score !== undefined && (
-                <div className="mt-4 flex flex-col items-start gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">Kết quả:</span>
-                    <div
-                      className={`score-display ${selfLearningData.score < 7 ? 'score-low' :
-                        selfLearningData.score < 8 ? 'score-medium' :
-                        selfLearningData.score < 8.5 ? 'score-high' : 'score-excellent'}`}
-                      onClick={() => selfLearningData.score !== null &&
-                        selfLearningData.score !== undefined &&
-                        selfLearningData.score >= 8.5 && fireConfetti()}
-                      style={{
-                        fontSize: '2rem',
-                        cursor: (selfLearningData.score !== null &&
-                          selfLearningData.score !== undefined &&
-                          selfLearningData.score >= 8.5) ? 'pointer' : 'default'
-                      }}
-                    >
-                      {selfLearningData.score}
-                      <span className="text-xs ml-1 opacity-70 font-normal">điểm</span>
-                    </div>
-                  </div>
+            </div>
+          )}
 
-                  {selfLearningData.score >= 8.5 && (
-                    <div className="flex items-center gap-2 bg-yellow-500/10 dark:bg-yellow-400/10 p-2 rounded-md border border-yellow-500/20 dark:border-yellow-400/20 mt-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-yellow-500 dark:text-yellow-400">
-                        <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">
-                        <span className="animate-pulse">Xuất sắc!</span> Bạn đã hoàn thành thử thách này với kết quả rất tốt.
-                      </span>
-                    </div>
-                  )}
+          {/* Hiển thị điểm số */}
+          {(isCompleted || isFailed) && selfLearningData?.score !== null && selfLearningData?.score !== undefined && (
+            <div className="mt-4 mb-6">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Kết quả:</span>
+                <div
+                  className={`score-display ${selfLearningData.score < 7 ? 'score-low' :
+                    selfLearningData.score < 8 ? 'score-medium' :
+                    selfLearningData.score < 8.5 ? 'score-high' : 'score-excellent'}`}
+                  onClick={() => selfLearningData.score !== null &&
+                    selfLearningData.score !== undefined &&
+                    selfLearningData.score >= 8.5 && fireConfetti()}
+                  style={{
+                    fontSize: '2rem',
+                    cursor: (selfLearningData.score !== null &&
+                      selfLearningData.score !== undefined &&
+                      selfLearningData.score >= 8.5) ? 'pointer' : 'default'
+                  }}
+                >
+                  {selfLearningData.score}
+                  <span className="text-xs ml-1 opacity-70 font-normal">điểm</span>
+                </div>
+              </div>
+
+              {selfLearningData.score >= 8.5 && (
+                <div className="flex items-center gap-2 bg-yellow-500/10 dark:bg-yellow-400/10 p-2 rounded-md border border-yellow-500/20 dark:border-yellow-400/20 mt-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-yellow-500 dark:text-yellow-400">
+                    <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">
+                    <span className="animate-pulse">Xuất sắc!</span> Bạn đã hoàn thành thử thách này với kết quả rất tốt.
+                  </span>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Kết quả đánh giá sau khi làm bài test */}
+          {analyzedData?.afterSubmit && (isCompleted || isFailed) && (
+            <div className="mt-8 mb-6">
+              <Separator className="my-6" />
+              <AfterSubmitResult data={analyzedData.afterSubmit} />
             </div>
           )}
 
@@ -518,7 +555,7 @@ export default function ChallengePage() {
               onSubmit={handleSubmitAnswers}
               tabSwitchCount={tabSwitchCount}
               onTabSwitch={() => setTabSwitchCount(prev => prev + 1)}
-              // Không cần truyền tabSwitchCount vì đã được xử lý trong QuestionDialog
+              challengeId={id}
             />
           )}
         </CardContent>

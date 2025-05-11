@@ -77,6 +77,23 @@ function mapApiChallengeToAppChallenge(apiChallenge: UserChallengeData, currentT
     estimatedDays: estimatedDays,
     learningGoals: selfLearningData.learningGoal,
     currentKnowledge: selfLearningData.analyzedData.academicKnowledge,
+    // Thử chuyển đổi academicKnowledge từ chuỗi sang đối tượng JSON nếu có thể
+    ...((() => {
+      try {
+        // Kiểm tra xem chuỗi có dạng JSON không
+        if (selfLearningData.analyzedData.academicKnowledge.startsWith('{') &&
+            selfLearningData.analyzedData.academicKnowledge.endsWith('}')) {
+          const jsonData = JSON.parse(selfLearningData.analyzedData.academicKnowledge);
+          if (jsonData && typeof jsonData === 'object') {
+            return { currentKnowledge: jsonData };
+          }
+        }
+      } catch (_) {
+        // Nếu không phải JSON hợp lệ, giữ nguyên chuỗi
+        console.log('academicKnowledge không phải là JSON hợp lệ');
+      }
+      return {};
+    })()),
     progress: deadlineProgress, // Use deadline progress instead of API progress
     completed: apiChallenge.status === 'completed',
     failed: apiChallenge.status === 'abandoned' || apiChallenge.status === 'failed',
@@ -224,7 +241,7 @@ export default function SelfChallengePage() {
       // Đóng toast loading và hiển thị toast success
       toast.dismiss('updating-challenges');
       toast.success('Danh sách thử thách đã được cập nhật!');
-    } catch (error) {
+    } catch (_) {
       // Nếu có lỗi, hiển thị thông báo lỗi
       toast.dismiss('updating-challenges');
       toast.error('Không thể cập nhật danh sách thử thách!');

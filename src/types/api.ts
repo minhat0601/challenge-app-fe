@@ -23,6 +23,34 @@ export interface SelfLearningTag {
   name: string;
 }
 
+export interface TestQuestionResult {
+  question: string;
+  answer: string;
+  point: number;
+  comment: string;
+  accuracy: string;
+  knowledge_coverage: string;
+}
+
+export interface TestLearningAssessment {
+  achieved_objectives: string[];
+  missing_points: string[];
+  misconceptions: string[];
+  time_efficiency: string;
+}
+
+export interface TestSuggestions {
+  improvement: string[];
+  resources: string[];
+}
+
+export interface AfterSubmitData {
+  feedback: string;
+  detail: TestQuestionResult[];
+  learning_assessment: TestLearningAssessment;
+  suggestions: TestSuggestions;
+}
+
 export interface AnalyzedData {
   scope: string;
   topic: string;
@@ -35,7 +63,8 @@ export interface AnalyzedData {
   note?: string;
   estimateHours?: string;
   relatedIssues: string;
-  academicKnowledge: string;
+  academicKnowledge: string | any;
+  afterSubmit?: AfterSubmitData;
 }
 
 export interface SelfLearningChallengeData {

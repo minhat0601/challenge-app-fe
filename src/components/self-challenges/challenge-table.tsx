@@ -111,70 +111,37 @@ export default function ChallengeTable({ challenges, loading = false, onRefresh 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[60px] text-center">STT</TableHead>
-              <TableHead className="w-[250px]">Tên thử thách</TableHead>
-              <TableHead>Mô tả</TableHead>
-              <TableHead className="w-[100px] text-center">Thời gian</TableHead>
-              <TableHead className="w-[100px] text-center">Tiến độ</TableHead>
-              <TableHead className="w-[150px]">Tag</TableHead>
-              <TableHead className="w-[100px] text-right">Thao tác</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {[1, 2, 3, 4, 5].map((i) => (
-              <TableRow key={i}>
-                <TableCell className="text-center"><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                <TableCell className="text-center"><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
-                <TableCell className="text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <Skeleton className="h-4 w-8" />
-                    <Skeleton className="h-2 w-16" />
-                  </div>
-                </TableCell>
-                <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[60px] text-center">STT</TableHead>
-              <TableHead className="w-[250px]">Tên thử thách</TableHead>
-              <TableHead>Mô tả</TableHead>
-              <TableHead className="w-[100px] text-center">Thời gian</TableHead>
-              <TableHead className="w-[100px] text-center">Tiến độ</TableHead>
-              <TableHead className="w-[150px]">Tag</TableHead>
-              <TableHead className="w-[100px] text-right">Thao tác</TableHead>
+              <TableHead className="w-[60px] text-center font-medium">STT</TableHead>
+              <TableHead className="w-[250px] font-medium">Tên thử thách</TableHead>
+              <TableHead className="font-medium">Mô tả</TableHead>
+              <TableHead className="w-[100px] text-center font-medium">Thời gian</TableHead>
+              <TableHead className="w-[100px] text-center font-medium">Tiến độ</TableHead>
+              <TableHead className="w-[150px] font-medium">Tag</TableHead>
+              <TableHead className="w-[120px] text-center font-medium">Trạng thái</TableHead>
+              <TableHead className="w-[120px] text-right font-medium">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {Array(5).fill(0).map((_, i) => (
               <TableRow key={i}>
-                <TableCell><Skeleton className="h-4 w-8" /></TableCell>
+                <TableCell className="text-center"><Skeleton className="h-4 w-6 mx-auto" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-full" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                <TableCell>
+                <TableCell className="text-center"><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
+                <TableCell className="text-center">
                   <div className="flex items-center justify-center">
-                    <div className="relative">
-                      <Skeleton className="h-6 w-20" />
-                      <Skeleton className="h-4 w-4 absolute left-8 top-1" />
-                    </div>
+                    <Skeleton className="h-3 w-20 rounded-full" />
                   </div>
                 </TableCell>
-                <TableCell><Skeleton className="h-8 w-16" /></TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="h-6 w-24 mx-auto rounded-full" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <Skeleton className="h-8 w-24 ml-auto rounded-md" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -189,19 +156,20 @@ export default function ChallengeTable({ challenges, loading = false, onRefresh 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[60px] text-center">STT</TableHead>
-            <TableHead className="w-[250px]">Tên thử thách</TableHead>
-            <TableHead>Mô tả</TableHead>
-            <TableHead className="w-[100px] text-center">Thời gian</TableHead>
-            <TableHead className="w-[100px] text-center">Tiến độ</TableHead>
-            <TableHead className="w-[150px]">Tag</TableHead>
-            <TableHead className="w-[100px] text-right">Thao tác</TableHead>
+            <TableHead className="w-[60px] text-center font-medium">STT</TableHead>
+            <TableHead className="w-[250px] font-medium">Tên thử thách</TableHead>
+            <TableHead className="font-medium">Mô tả</TableHead>
+            <TableHead className="w-[100px] text-center font-medium">Thời gian</TableHead>
+            <TableHead className="w-[100px] text-center font-medium">Tiến độ</TableHead>
+            <TableHead className="w-[150px] font-medium">Tag</TableHead>
+            <TableHead className="w-[120px] text-center font-medium">Trạng thái</TableHead>
+            <TableHead className="w-[120px] text-right font-medium">Thao tác</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {challenges.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center py-4 text-muted-foreground">
+              <TableCell colSpan={8} className="text-center py-4 text-muted-foreground">
                 Không có thử thách nào. Hãy tạo thử thách mới!
               </TableCell>
             </TableRow>
@@ -209,47 +177,11 @@ export default function ChallengeTable({ challenges, loading = false, onRefresh 
             challenges.map((challenge, index) => (
             <TableRow
               key={challenge.id}
-              className="relative"
+              className="relative hover:bg-muted/40 transition-colors"
             >
               <TableCell className="text-center font-medium">{index + 1}</TableCell>
-              <TableCell className="font-medium relative">
+              <TableCell className="font-medium">
                 {challenge.title}
-                {challenge.completed && (
-                  <div className="absolute bottom-0 right-0 opacity-40">
-                    <div className="relative w-32 h-20 rotate-[-20deg] flex items-center justify-center mr-2 mb-2">
-                      <div className="absolute inset-0 border-2 border-green-600 dark:border-green-500 rounded-md"></div>
-                      <div className="absolute inset-[3px] border border-green-600/50 dark:border-green-500/50 rounded-md"></div>
-                      <div className="absolute inset-[6px] border border-dashed border-green-600/30 dark:border-green-500/30"></div>
-
-                      <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-green-600 dark:border-green-500"></div>
-                      <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-green-600 dark:border-green-500"></div>
-                      <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-green-600 dark:border-green-500"></div>
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-green-600 dark:border-green-500"></div>
-
-                      <div className="text-green-600 dark:text-green-500 text-center font-bold text-lg tracking-wider">
-                        Đã hoàn thành
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {challenge.failed && (
-                  <div className="absolute bottom-0 right-0 opacity-40">
-                    <div className="relative w-32 h-20 rotate-[-20deg] flex items-center justify-center mr-2 mb-2">
-                      <div className="absolute inset-0 border-2 border-red-600 dark:border-red-500 rounded-md"></div>
-                      <div className="absolute inset-[3px] border border-red-600/50 dark:border-red-500/50 rounded-md"></div>
-                      <div className="absolute inset-[6px] border border-dashed border-red-600/30 dark:border-red-500/30"></div>
-
-                      <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-red-600 dark:border-red-500"></div>
-                      <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-red-600 dark:border-red-500"></div>
-                      <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-red-600 dark:border-red-500"></div>
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-red-600 dark:border-red-500"></div>
-
-                      <div className="text-red-600 dark:text-red-500 text-center font-bold text-lg tracking-wider">
-                        Không hoàn thành
-                      </div>
-                    </div>
-                  </div>
-                )}
               </TableCell>
               <TableCell className="text-muted-foreground">{challenge.description}</TableCell>
               <TableCell className="text-center">{challenge.estimatedDays} ngày</TableCell>
@@ -287,23 +219,45 @@ export default function ChallengeTable({ challenges, loading = false, onRefresh 
                 {challenge.tag && (
                   <Badge
                     variant="default"
-                    className="text-[10px] py-0 px-2"
+                    className="text-[10px] py-0 px-2 font-medium"
                   >
                     {challenge.tag}
                   </Badge>
                 )}
               </TableCell>
+              <TableCell className="text-center">
+                {challenge.completed && (
+                  <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 font-medium text-xs py-1">
+                    Đã hoàn thành
+                  </Badge>
+                )}
+                {challenge.failed && (
+                  <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20 font-medium text-xs py-1">
+                    Không hoàn thành
+                  </Badge>
+                )}
+                {!challenge.completed && !challenge.failed && (
+                  <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20 font-medium text-xs py-1">
+                    Đang học
+                  </Badge>
+                )}
+              </TableCell>
               <TableCell className="text-right">
-                <Button variant="ghost" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hover:bg-secondary/80"
+                  onClick={() => router.push(`/dashboard/selfChallenge/${challenge.id}`)}
+                >
                   <Eye className="h-4 w-4 mr-2" />
-                  Xem
+                  Xem chi tiết
                 </Button>
               </TableCell>
             </TableRow>
             ))
           )}
           <TableRow>
-            <TableCell colSpan={6}>
+            <TableCell colSpan={8}>
               <Button
                 variant="ghost"
                 className="w-full flex items-center justify-center py-4 text-muted-foreground hover:text-primary"

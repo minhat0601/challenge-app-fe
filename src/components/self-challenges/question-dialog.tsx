@@ -5,6 +5,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { TestResult, submitTestAnswers } from '@/services/api';
+import { TestResultDialog } from './test-result-dialog';
+import { fireConfetti } from '@/components/confetti-effect';
 
 import { CheckCircle, AlertTriangle, Code, Copy, X, Clipboard } from 'lucide-react';
 import { toast } from 'sonner';
@@ -16,6 +19,7 @@ interface QuestionDialogProps {
   onSubmit: (answers: Record<number, string>) => Promise<void>;
   tabSwitchCount: number;
   onTabSwitch?: () => void;
+  challengeId: number; // Thêm challengeId để gửi lên API
 }
 
 export function QuestionDialog({
@@ -24,13 +28,16 @@ export function QuestionDialog({
   questions,
   onSubmit,
   tabSwitchCount,
-  onTabSwitch
+  onTabSwitch,
+  challengeId
 }: QuestionDialogProps) {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [devToolsCount, setDevToolsCount] = useState(0); // Đếm số lần sử dụng công cụ developer
   const [copyCount, setCopyCount] = useState(0); // Đếm số lần sử dụng copy
   const [pasteCount, setPasteCount] = useState(0); // Đếm số lần dán văn bản
+  const [testResult, setTestResult] = useState<TestResult | null>(null);
+  const [showResultDialog, setShowResultDialog] = useState(false);
 
   // Theo dõi khi người dùng chuyển tab hoặc mở F12
   useEffect(() => {
@@ -106,7 +113,6 @@ export function QuestionDialog({
 
     // Chặn menu chuột phải
     const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
       toast.error('Không được phép mở menu chuột phải trong quá trình làm bài!', {
         id: 'context-menu-error',
         duration: 3000,
@@ -116,7 +122,6 @@ export function QuestionDialog({
 
     // Chặn copy
     const handleCopy = (e: ClipboardEvent) => {
-      e.preventDefault();
       setCopyCount(prev => prev + 1);
       toast.error('Không được phép sao chép trong quá trình làm bài!', {
         id: 'copy-error',
@@ -127,7 +132,6 @@ export function QuestionDialog({
 
     // Chặn paste
     const handlePaste = (e: ClipboardEvent) => {
-      e.preventDefault();
       setPasteCount(prev => prev + 1);
       toast.error('Không được phép dán văn bản trong quá trình làm bài!', {
         id: 'paste-error',
@@ -183,27 +187,61 @@ export function QuestionDialog({
     setSubmitting(true);
 
     try {
-      await onSubmit(answers);
-      // Đóng dialog sau khi submit thành công
-      onOpenChange(false);
+      // Gọi API để gửi câu trả lời và nhận kết quả đánh giá
+      const result = await submitTestAnswers(challengeId, answers);
+
+      if (result) {
+        // Lưu kết quả và hiển thị dialog kết quả
+        setTestResult(result);
+        setShowResultDialog(true);
+
+        // Hiển thị confetti nếu điểm cao
+        if (result.score >= 8.5) {
+          setTimeout(() => {
+            fireConfetti();
+          }, 500);
+        }
+
+        // Gọi hàm onSubmit để cập nhật trạng thái ngay lập tức
+        // Sử dụng Promise.all để đảm bảo cả hai tác vụ được thực hiện song song
+        await onSubmit(answers);
+      } else {
+        toast.error('Không thể gửi bài làm. Vui lòng thử lại sau.');
+      }
     } catch (error) {
       console.error('Error submitting answers:', error);
+      toast.error('Có lỗi xảy ra khi gửi bài làm. Vui lòng thử lại sau.');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(open) => {
-      // Chỉ cho phép đóng dialog khi bấm nút Hủy
-      // Không cho phép bấm ra ngoài để thoát
-      if (open === false) {
-        // Không làm gì khi bấm ra ngoài
-        return;
-      }
-      onOpenChange(open);
-    }}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto p-0" onPointerDownOutside={(e) => e.preventDefault()}>
+    <>
+      {/* Dialog kết quả đánh giá */}
+      <TestResultDialog
+        open={showResultDialog}
+        onOpenChange={(open) => {
+          setShowResultDialog(open);
+          if (!open) {
+            // Đóng dialog câu hỏi khi đóng dialog kết quả
+            onOpenChange(false);
+          }
+        }}
+        result={testResult}
+      />
+
+      {/* Dialog câu hỏi */}
+      <Dialog open={open} onOpenChange={(open) => {
+        // Chỉ cho phép đóng dialog khi bấm nút Hủy
+        // Không cho phép bấm ra ngoài để thoát
+        if (open === false) {
+          // Không làm gì khi bấm ra ngoài
+          return;
+        }
+        onOpenChange(open);
+      }}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto p-0" onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader className="sticky top-0 bg-background z-10 pb-4 border-b px-6 pt-6">
           <div className="flex items-center justify-between">
             <div>
@@ -315,5 +353,6 @@ export function QuestionDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
