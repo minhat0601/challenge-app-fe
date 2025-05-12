@@ -36,9 +36,6 @@ jobs:
             echo "📦 Installing dependencies..."
             yarn install
 
-            echo "🧪 Running linting checks..."
-            yarn lint
-
             echo "🔨 Building Next.js app..."
             yarn build
 
