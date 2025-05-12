@@ -1,0 +1,47 @@
+
+name: Deploy Next.js App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Deploy to VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            cd ~/apps/next-frontend
+
+            echo "📥 Pulling latest changes from GitHub..."
+            git pull origin main
+
+            echo "📦 Installing dependencies..."
+            yarn install
+
+            echo "🧪 Running linting checks..."
+            yarn lint
+
+            echo "🔨 Building Next.js app..."
+            yarn build
+
+            echo "🚀 Restarting PM2 process..."
+            pm2 restart next-frontend || pm2 start yarn --name "next-frontend" -- start
+          EOF
