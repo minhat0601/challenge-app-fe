@@ -19,19 +19,27 @@ import { toast } from 'sonner';
 
 interface DeleteExpenseDialogProps {
   expenseId: string;
-  expenseName: string;
+  expenseName?: string;
   onExpenseDeleted: () => void;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function DeleteExpenseDialog({
   expenseId,
-  expenseName,
+  expenseName = 'khoản chi này',
   onExpenseDeleted,
   trigger,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen,
 }: DeleteExpenseDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Sử dụng controlled hoặc uncontrolled state tùy thuộc vào props
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = setControlledOpen || setInternalOpen;
 
   const handleDeleteExpense = async () => {
     setLoading(true);

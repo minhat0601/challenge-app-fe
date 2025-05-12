@@ -6,14 +6,26 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
 import { CostSharingOverview } from '@/types/expense';
 import { formatCurrency } from '@/utils/format';
 import { CreateExpenseDialog } from '@/components/trips/create-expense-dialog';
 import { CreateContributionDialog } from '@/components/trips/create-contribution-dialog';
 import { DeleteExpenseDialog } from '@/components/trips/delete-expense-dialog';
 import { useMediaQuery } from '@/hooks/use-media-query';
+
+// Hàm định dạng ngày tháng đơn giản thay thế cho date-fns
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+
+  // Định dạng ngày tháng: dd/MM/yyyy HH:mm
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
 import { Receipt, PiggyBank, MoreVertical, Plus, ArrowRight, ArrowLeft } from 'lucide-react';
 import {
   DropdownMenu,
@@ -56,7 +68,7 @@ export function CostSharingOverviewComponent({ data, onRefresh }: CostSharingOve
                 {data.countContributions} khoản đóng góp
               </div>
             </div>
-            
+
             <div className="bg-red-50 dark:bg-red-900/10 p-4 rounded-lg border border-red-200 dark:border-red-900/30">
               <div className="text-sm text-red-600 dark:text-red-400 mb-1">Tổng chi tiêu nhóm</div>
               <div className="text-2xl font-bold text-red-700 dark:text-red-300">
@@ -66,7 +78,7 @@ export function CostSharingOverviewComponent({ data, onRefresh }: CostSharingOve
                 {data.expenses.filter(e => e.type === 'group').length} khoản chi nhóm
               </div>
             </div>
-            
+
             <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-200 dark:border-blue-900/30">
               <div className="text-sm text-blue-600 dark:text-blue-400 mb-1">Số dư quỹ nhóm</div>
               <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
@@ -86,7 +98,7 @@ export function CostSharingOverviewComponent({ data, onRefresh }: CostSharingOve
           <TabsTrigger value="expenses">Các khoản chi ra</TabsTrigger>
           <TabsTrigger value="contributions">Các khoản đóng quỹ</TabsTrigger>
         </TabsList>
-        
+
         {/* Tab chi tiêu */}
         <TabsContent value="expenses" className="space-y-4">
           <div className="flex justify-between items-center">
@@ -151,7 +163,7 @@ export function CostSharingOverviewComponent({ data, onRefresh }: CostSharingOve
                         <div>
                           <div className="font-medium">{expense.description}</div>
                           <div className="text-sm text-muted-foreground">
-                            {format(new Date(expense.date), 'dd/MM/yyyy HH:mm', { locale: vi })}
+                            {formatDate(expense.date)}
                             {' • '}
                             {expense.type === 'group' ? 'Quỹ nhóm' : 'Ứng tiền cá nhân'}
                             {' • '}
@@ -203,7 +215,7 @@ export function CostSharingOverviewComponent({ data, onRefresh }: CostSharingOve
                           <TableCell className="text-center font-medium">{index + 1}</TableCell>
                           <TableCell className="font-medium">{expense.description}</TableCell>
                           <TableCell className="whitespace-nowrap">
-                            {format(new Date(expense.date), 'dd/MM/yyyy HH:mm', { locale: vi })}
+                            {formatDate(expense.date)}
                           </TableCell>
                           <TableCell>
                             <span className={`px-2 py-1 rounded-full text-xs ${
@@ -248,7 +260,7 @@ export function CostSharingOverviewComponent({ data, onRefresh }: CostSharingOve
             </div>
           )}
         </TabsContent>
-        
+
         {/* Tab đóng góp */}
         <TabsContent value="contributions" className="space-y-4">
           <div className="flex justify-between items-center">
@@ -300,7 +312,7 @@ export function CostSharingOverviewComponent({ data, onRefresh }: CostSharingOve
                         <div>
                           <div className="font-medium">{contribution.description}</div>
                           <div className="text-sm text-muted-foreground">
-                            {format(new Date(contribution.date), 'dd/MM/yyyy HH:mm', { locale: vi })}
+                            {formatDate(contribution.date)}
                             {' • '}
                             Đóng góp bởi: {contribution.paiderName || contribution.user?.name || 'Không xác định'}
                           </div>
@@ -332,7 +344,7 @@ export function CostSharingOverviewComponent({ data, onRefresh }: CostSharingOve
                           <TableCell className="text-center font-medium">{index + 1}</TableCell>
                           <TableCell className="font-medium">{contribution.description}</TableCell>
                           <TableCell className="whitespace-nowrap">
-                            {format(new Date(contribution.date), 'dd/MM/yyyy HH:mm', { locale: vi })}
+                            {formatDate(contribution.date)}
                           </TableCell>
                           <TableCell>{contribution.paiderName || contribution.user?.name || 'Không xác định'}</TableCell>
                           <TableCell className="text-right font-bold text-green-600 dark:text-green-400">
