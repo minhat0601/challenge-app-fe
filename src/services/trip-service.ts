@@ -1,6 +1,7 @@
 import { Trip, TripApiResponse, TripFromAPI, TripPaginationParams, TripDay, DayActivity, TripParticipant } from '@/types/trip';
 import { fetchWithAuth } from '@/lib/fetcher';
 import envConf from '@/app/config/config';
+import { useAuthStore } from '@/stores/auth-store';
 
 const API_BASE_URL = envConf.NEXT_PUBLIC_API_ENDPOINT || 'http://localhost:3000';
 
@@ -480,17 +481,28 @@ export async function createItinerary(itineraryData: ItineraryItem): Promise<{ s
     console.log('Creating itinerary with data:', itineraryData);
     console.log('Trip ID:', itineraryData.tripId);
 
-    // Đảm bảo tripId là string
+    // Tạo payload đúng định dạng cho API
     const payload = {
-      ...itineraryData,
-      tripId: String(itineraryData.tripId)
+      tripId: String(itineraryData.tripId),
+      dayNumber: Number(itineraryData.dayNumber),
+      location: String(itineraryData.location),
+      startTime: String(itineraryData.startTime),
+      endTime: String(itineraryData.endTime),
+      description: String(itineraryData.description)
     };
 
-    const response = await fetchWithAuth(`${API_BASE_URL}/itineraries`, {
+    console.log('Formatted payload:', payload);
+    console.log('JSON payload:', JSON.stringify(payload));
+
+    // Sử dụng fetch trực tiếp thay vì fetchWithAuth để có thể kiểm soát hoàn toàn request
+    const { accessToken } = useAuthStore.getState();
+
+    const response = await fetch(`${API_BASE_URL}/itineraries`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': '*/*'
+        'Accept': '*/*',
+        'Authorization': `Bearer ${accessToken}`
       },
       body: JSON.stringify(payload),
     });
