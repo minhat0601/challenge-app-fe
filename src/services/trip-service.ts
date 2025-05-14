@@ -1,4 +1,4 @@
-import { Trip, TripApiResponse, TripFromAPI, TripPaginationParams, TripDay, DayActivity } from '@/types/trip';
+import { Trip, TripApiResponse, TripFromAPI, TripPaginationParams, TripDay, DayActivity, TripParticipant } from '@/types/trip';
 import { fetchWithAuth } from '@/lib/fetcher';
 import envConf from '@/app/config/config';
 
@@ -26,7 +26,7 @@ export function mapTripFromAPI(tripFromAPI: TripFromAPI): Trip {
   const participants: TripParticipant[] = tripFromAPI.participants?.map(p => ({
     id: p.id.toString(),
     name: p.name,
-    email: p.email, // Truy cập trực tiếp vào trường email
+    email: p.email, // Lấy email từ user object nếu có
     avatar: p.user?.avatar,
     userId: p.userId,
     isOrganizer: p.userId === tripFromAPI.createdById, // Người tổ chức là người có userId = createdById
@@ -476,12 +476,28 @@ export interface ItineraryItem {
  */
 export async function createItinerary(itineraryData: ItineraryItem): Promise<{ success: boolean; data?: ItineraryItem; error?: string }> {
   try {
+    // Log dữ liệu gửi đi để debug
+    console.log('Creating itinerary with data:', itineraryData);
+    console.log('Trip ID:', itineraryData.tripId);
+
+    // Đảm bảo tripId là string
+    const payload = {
+      ...itineraryData,
+      tripId: String(itineraryData.tripId)
+    };
+
     const response = await fetchWithAuth(`${API_BASE_URL}/itineraries`, {
       method: 'POST',
-      body: JSON.stringify(itineraryData),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': '*/*'
+      },
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();
+    console.log('API response status:', response.status);
+    console.log('API response:', data);
 
     if (!response.ok) {
       return {
@@ -643,7 +659,14 @@ export interface CreateExpenseData {
  */
 export async function createExpense(data: CreateExpenseData): Promise<{
   success: boolean;
-  data?: any;
+  data?: {
+    id: string;
+    amount: string;
+    description: string;
+    date: string;
+    type: string;
+    costSharingGroupParticipantId: string;
+  };
   error?: string;
 }> {
   try {

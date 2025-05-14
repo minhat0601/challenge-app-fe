@@ -1,6 +1,7 @@
 import { fetchWithAuth } from '@/lib/fetcher';
 import envConf from '@/app/config/config';
 import { PersonalExpenseGroup, PersonalExpenseOverview } from '@/types/personal-expense';
+import { useAuthStore } from '@/stores/auth-store';
 
 const API_BASE_URL = envConf.NEXT_PUBLIC_API_ENDPOINT;
 
@@ -36,18 +37,36 @@ export async function createPersonalExpenseGroup(name: string, description: stri
   error?: string;
 }> {
   try {
-    const response = await fetchWithAuth(`${API_BASE_URL}/cost-sharing`, {
+    // Sử dụng URL trực tiếp như trong curl command
+    const endpoint = 'http://103.112.211.184:3001/api/cost-sharing';
+
+    console.log('Endpoint being called:', endpoint);
+
+    // Tạo payload chính xác như trong Swagger
+    const payload = JSON.stringify({
+      name: name,
+      description: description
+    });
+
+    console.log('Payload JSON:', payload);
+
+    // Lấy token từ store
+    const { accessToken } = useAuthStore.getState();
+
+    // Tạo request trực tiếp với fetch thay vì fetchWithAuth
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': '*/*',
+        'Authorization': `Bearer ${accessToken}`
       },
-      body: JSON.stringify({
-        name,
-        description,
-      }),
+      body: payload,
     });
 
     const responseData = await response.json();
+    console.log('API response status:', response.status);
+    console.log('API response:', responseData);
 
     if (!response.ok) {
       return {
