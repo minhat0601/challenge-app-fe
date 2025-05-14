@@ -479,11 +479,20 @@ export async function createItinerary(itineraryData: ItineraryItem): Promise<{ s
   try {
     // Log dữ liệu gửi đi để debug
     console.log('Creating itinerary with data:', itineraryData);
-    console.log('Trip ID:', itineraryData.tripId);
+    console.log('Trip ID from data:', itineraryData.tripId);
+
+    // Lấy tripId từ URL hiện tại nếu có
+    const currentUrl = typeof window !== 'undefined' ? window.location.pathname : '';
+    const tripIdFromUrl = currentUrl.match(/\/trips\/([^\/]+)/)?.[1];
+
+    // Sử dụng tripId từ URL nếu có, nếu không thì sử dụng tripId từ dữ liệu
+    const finalTripId = tripIdFromUrl || String(itineraryData.tripId);
+    console.log('Trip ID from URL:', tripIdFromUrl);
+    console.log('Final Trip ID to use:', finalTripId);
 
     // Tạo payload đúng định dạng cho API
     const payload = {
-      tripId: String(itineraryData.tripId),
+      tripId: finalTripId,
       dayNumber: Number(itineraryData.dayNumber),
       location: String(itineraryData.location),
       startTime: String(itineraryData.startTime),
